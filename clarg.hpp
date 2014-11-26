@@ -14,6 +14,10 @@
 
 namespace clarg
 {
+     template <class Tp>
+     Tp defVal()
+     {return Tp();}
+
      //struct for describing a command line argument 
      struct Clarg
      {
@@ -34,9 +38,10 @@ namespace clarg
 
           Container(int argc, char** argv);
 
-          #include "parseNum.tpp" //template <class Tp> Tp parseNum(const Clarg&, const Tp&);
-          bool parseBool(const Clarg&, const bool&);
-          std::string parseString(const Clarg&, const char*);
+          #include "parse.tpp" 
+          //template <class Tp> Tp parse(const Clarg&, const Tp&);
+          //template <> std::string parse<std::string>(const Clarg&, const std::string&);
+          //template <> bool parse<bool>(const Clarg&, const bool&);
 
           void describe(const char*);
 

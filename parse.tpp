@@ -5,7 +5,7 @@
 
 //implementation of template function of class Container
 template <class Tp>
-Tp parseNum(const Clarg& clarg, const Tp& defval)
+Tp parse(const Clarg& clarg, const Tp& defval = defVal<Tp>())
 {
      std::stringstream ss;
      Tp retval = defval;
@@ -27,4 +27,5 @@ Tp parseNum(const Clarg& clarg, const Tp& defval)
 
      return retval;
 }
+
 

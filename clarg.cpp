@@ -21,44 +21,49 @@ clarg::Container::Container(int argc, char ** argv): read_args(0)
      for(int i=0; i<argc; i++)
           this->argv.push_back(std::string(argv[i]));
 }
-
-bool clarg::Container::parseBool(const Clarg& clarg, const bool& defval=false)
+  
+namespace clarg
 {
-     clargs.push_back(clarg);
+     template<> 
+     bool Container::parse<bool>(const Clarg& clarg, const bool& defval)
+     {
+          clargs.push_back(clarg);
 
-     for(int i=0; i<argv.size(); i++)
-          for(int j=0; j<clarg.names.size(); j++)
-               if(argv[i] == clarg.names[j])
-               {
-                    read_args++;
-                    return !defval;                    
-               } 
+          for(int i=0; i<argv.size(); i++)
+               for(int j=0; j<clarg.names.size(); j++)
+                    if(argv[i] == clarg.names[j])
+                    {
+                         read_args++;
+                         return !defval;
+                    }
 
-     return defval;
-}
+          return defval;
+     }
 
-std::string clarg::Container::parseString(const Clarg& clarg, const char* defval="")
-{         
-     std::string retval = defval;
-     size_t      pos;
+     template<>
+     std::string Container::parse(const Clarg& clarg, const std::string& defval)
+     {
+          std::string retval = defval;
+          size_t      pos;
 
-     clargs.push_back(clarg);
+          clargs.push_back(clarg);
 
-     for(int i=0; i<argv.size()-1; i++)
-          for(int j=0; j<clarg.names.size(); j++)
-               if(argv[i] == clarg.names[j]) 
-               {
-                    read_args++;
+          for(int i=0; i<argv.size()-1; i++)
+               for(int j=0; j<clarg.names.size(); j++)
+                    if(argv[i] == clarg.names[j])
+                    {
+                         read_args++;
 
-                    retval = argv[i+1];
-                    while((pos=retval.find("\\")) != std::string::npos)
-                         retval.replace(pos,1," ");
+                         retval = argv[i+1];
+                         while((pos=retval.find("\\")) != std::string::npos)
+                              retval.replace(pos,1," ");
 
-                    argv.erase(argv.begin()+i+1);
-                    return retval;
-               } 
+                         argv.erase(argv.begin()+i+1);
+                         return retval;
+                    }
 
-     return retval;
+          return retval;
+     }
 }
 
 void clarg::Container::describe(const char* helpmsg)
