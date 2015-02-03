@@ -30,7 +30,7 @@ namespace oarg
 		~Oarg();
  
 		//routines
-		Oarg& operator=(const Oarg& oarg);
+		virtual Oarg& operator=(const Oarg& oarg);
 		static void parse(int argc, char** argv, bool clear = true);
 		static int parse(const std::string& filename, bool clear = true);
 		static void describe(const std::string& helpmsg = "");
