@@ -1,0 +1,20 @@
+COMMAND LINE PARSING
+
+You can declare a var as Arg<type>(string NAMES, type DEF_VAL, string DESCRIPTION = "")
+
+NAMES is the name parser will look for in order to find your argument. If you set, for instance, NAMES = "-i --ival", the program will look for occurrences of both "-i" and "--ival" in the command line. 
+
+There's a policy you MUST follow for COMMAND LINE NAMES:
+	-names with single letter begin with single "-". Example: If you want a name "n", it must be passed in the command line as "-n".
+	-names with more than one letter begin with "--". Example: "int-argument" must become "--int-argument". 
+	-names to be looked in the COMMAND LINE must never be terminated with character ':'. 
+
+Even if you don't follow these rules when declaring an instance of class Arg<type>, the program will force it to become conformant with it's policy. If you create an instance Arg<type> arg("i int-val integer:",DEF_VAL,DESCRIPTION), the program will store the keywords to be looked for in command line as "-i", "--int-val" and "--integer".
+
+DEF_VAL is the default value of type "type" the program will return if nothing is found in parsing anyway. 
+
+DESCRIPTION is an optional description of the argument. The descriptions of all arguments can be read by invoking the method Oarg::describe(string helpmsg = "").
+
+In order to get the value after parsing, you must invoke the method Arg<type>::getVal(int index = 0). The values found in command line are stored in a vector of strings and the program assumes every argument separated with spaces until a new name comes is an argument of the instance of the object. If you have an instance Arg<float> arg("-f",0.1,"") and the argv has the form "--val 3 -f 0.4 21 0.89 --val2 'string'", every number from 0.4 to 0.89 will be stored as an argument of instance arg. in methos 'getVal', argument index defines the index of the argument in the argument vector stored.
+
+If you pass a string started with "-", the program will interpret the string as a name. To solve this, put a character "\" before the string (eg. "\-ey b0ss"). The program will then interpret correctly your string as an argument "-ey b0ss".

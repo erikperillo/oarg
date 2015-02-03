@@ -1,7 +1,9 @@
-all: test
+NAME = oarg
 
-test: test.cpp clarg.o
-	g++ -o test test.cpp clarg.o
+all: $(NAME).o
 
-clarg.o: clarg.cpp clarg.hpp
-	g++ -c -o clarg.o clarg.cpp
+$(NAME).o: $(NAME).cpp $(NAME).hpp parse.tpp $(NAME).tpp arg.tpp
+	g++ -c -o $(NAME).o $(NAME).cpp -O3
+
+test: test.cpp $(NAME).o
+	g++ -o test test.cpp $(NAME).o -O3
