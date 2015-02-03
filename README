@@ -18,3 +18,15 @@ DESCRIPTION is an optional description of the argument. The descriptions of all 
 In order to get the value after parsing, you must invoke the method Arg<type>::getVal(int index = 0). The values found in command line are stored in a vector of strings and the program assumes every argument separated with spaces until a new name comes is an argument of the instance of the object. If you have an instance Arg<float> arg("-f",0.1,"") and the argv has the form "--val 3 -f 0.4 21 0.89 --val2 'string'", every number from 0.4 to 0.89 will be stored as an argument of instance arg. in methos 'getVal', argument index defines the index of the argument in the argument vector stored.
 
 If you pass a string started with "-", the program will interpret the string as a name. To solve this, put a character "\" before the string (eg. "\-ey b0ss"). The program will then interpret correctly your string as an argument "-ey b0ss".
+
+To finally parse, one must invoke Oarg::parse(int argc, char** argv).
+
+FILE PARSING
+
+The process is similar to command line parsing. 
+
+There's also a policy you MUST follow for FILE PARSING NAMES:
+	-names to be parsed in files must terminate with a single ":" and NEVER start with any number of "-"s.
+Even if you don't follow the rules, the program will force it to be conformant to it's policy. If you instantiate a class, eg. Arg<type> arg("----arg-value:::::",DEF_VAL,DESCRIPTION), the name to be parsed in a file parse will be "arg-value:" automatically.
+
+To parse in a file, one must invoke Oarg::parse(const string& filename).
