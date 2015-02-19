@@ -15,10 +15,13 @@
 #define debugmsg(msg)\
 std::cout << "[oarg@debug] " << msg << std::endl
 
-#define OARG_VERSION "1.0"
+#define OARG_VERSION "1.1"
 
 namespace oarg
 {
+	void parse(int argc, char** argv, bool clear = true);
+	int parse(const std::string& filename, bool clear = true);
+
 	//class for describing a command line argument 
 	class Oarg
 	{
@@ -31,8 +34,6 @@ namespace oarg
  
 		//routines
 		virtual Oarg& operator=(const Oarg& oarg);
-		static void parse(int argc, char** argv, bool clear = true);
-		static int parse(const std::string& filename, bool clear = true);
 		static void describe(const std::string& helpmsg = "");
 
 		private:
@@ -41,6 +42,7 @@ namespace oarg
 		static std::string cfName(const std::string& name);
 
 		protected:
+		virtual void setVec() = 0;
 		static bool isClName(const std::string& word);
 		//variables
 		int id;
@@ -48,6 +50,10 @@ namespace oarg
 		std::vector<std::string> names;
 		std::string description;
 		std::vector<std::string> str_vals;	
+
+		//friends declaration
+		friend void parse(int argc, char** argv, bool clear);
+		friend int parse(const std::string& filename, bool clear);
 	};
 
 	//class which includes values	
@@ -66,13 +72,17 @@ namespace oarg
 
 		//getters
 		bool wasFound();
+		int nParsedVals();
 		Tp getVal(int index = 0);
 		Tp getRelVal(int argc, char** argv, int pos = 1);
 		std::vector<Tp> getValVec();
 
 		private:
+		//routines		
+		void setVec();
 		//variables
 		Tp def_val;
+		std::vector<Tp> val_vec;
 	};
 
 	//including implementation of template methods
@@ -89,6 +99,8 @@ namespace oarg
 
 		//declaration of friend class
 		friend class Oarg;
+		friend void parse(int argc, char** argv, bool clear);
+		friend int parse(const std::string& filename, bool clear);
 	};
 
 }

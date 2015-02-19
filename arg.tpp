@@ -56,23 +56,24 @@ Arg<Tp>& Arg<Tp>::operator=(const Arg& arg)
 template <class Tp>
 bool Arg<Tp>::wasFound()
 {
-	return this->found;
+	return found;
+}
+
+//return number of parsed values
+template <class Tp>
+int Arg<Tp>::nParsedVals()
+{
+	return val_vec.size();
 }
 
 //gets first "index" th of vector os parsed values
 template <class Tp>
 Tp Arg<Tp>::getVal(int index)
 {
-	std::stringstream ss;
-	Tp ret_val;
+	if(index >= 0 && index < val_vec.size())
+		return val_vec[index];
 
-	if(found && index >= 0 && index < str_vals.size())
-	{
-		ss.str(str_vals[index]);
-		return (ss >> ret_val)?ret_val:def_val;
-	}
-
-	return def_val;
+	return def_val;		
 }
 
 //gets "pos" th value not defined by clname in parsing
@@ -96,18 +97,23 @@ Tp Arg<Tp>::getRelVal(int argc, char** argv, int pos)
 template <class Tp>
 std::vector<Tp> Arg<Tp>::getValVec()
 {
-	std::string str = "";
-	std::stringstream ss;
-	std::vector<Tp> ret_vec;
-	Tp val;
-	
+	return val_vec;
+}
+
+template <class Tp>
+void Arg<Tp>::setVec()
+{
+	std::stringstream ss;	
+	Tp dumb_val;
+
 	for(int i=0; i<str_vals.size(); i++)
-		str += str_vals[i] + " ";
-	
-	ss.str(str);
+	{
+		ss.str(str_vals[i]);
 
-	while(ss >> val)
-		ret_vec.push_back(val);
+		if(ss >> dumb_val)
+			val_vec.push_back(dumb_val);
 
-	return ret_vec;
+		ss.str(std::string());
+		ss.clear();
+	}	
 }

@@ -66,7 +66,7 @@ oarg::Oarg::~Oarg()
 }
 
 //parsing from command line routine
-void oarg::Oarg::parse(int argc, char** argv, bool clear)
+void oarg::parse(int argc, char** argv, bool clear)
 {
      oarg::Oarg* oarg_ptr;
 	std::string arg;
@@ -87,7 +87,7 @@ void oarg::Oarg::parse(int argc, char** argv, bool clear)
 				if(argv[j] == Oarg::clName(oarg_ptr->names[k]))
 				{
 					oarg_ptr->found = true;
-					for(int l=j+1; l<argc && !isClName(argv[l]); l++)
+					for(int l=j+1; l<argc && !Oarg::isClName(argv[l]); l++)
 					{
 						arg = std::string(argv[l]);
 						if(arg.substr(0,2) == "\\-")
@@ -96,11 +96,13 @@ void oarg::Oarg::parse(int argc, char** argv, bool clear)
 					}
 				}
 		}
+
+		oarg_ptr->setVec();
 	}
 }
 
 //parsing from file routine
-int oarg::Oarg::parse(const std::string& filename, bool clear)
+int oarg::parse(const std::string& filename, bool clear)
 {
 	std::ifstream in_file(filename.c_str());
 	std::stringstream ss;
@@ -243,17 +245,17 @@ int oarg::Container::add(Oarg* oarg_ptr, bool is_repeated)
 namespace oarg
 {
 	//gets value stored in str_vals
-	template<> std::string oarg::Arg<std::string>::getVal(int index)
+	template<> void oarg::Arg<std::string>::setVec()
 	{
-		if(found && index >= 0 && index < str_vals.size())
-     		return str_vals[index];
-		return def_val;
+		for(int i=0; i<str_vals.size(); i++)
+			val_vec.push_back(str_vals[i]);
 	}
 
 	//gets value stored in str_vals
-	template<> bool oarg::Arg<bool>::getVal(int index)
+	template<> void oarg::Arg<bool>::setVec()
 	{
-		return found?(!def_val):def_val;
+		if(found)
+			val_vec.push_back(!def_val);
 	}
 
 	//gets "pos" nth value not defined after clname 
@@ -287,27 +289,5 @@ namespace oarg
 			}
 
 		return val;
-	}
-
-	//gets vector of all values parsed and a zero lenght vector if nothing was found	
-	template <> std::vector<std::string> Arg<std::string>::getValVec()
-	{
-		std::vector<std::string> ret_vec;
-		
-		for(int i=0; i<str_vals.size(); i++)
-			ret_vec.push_back(str_vals[i]);
-	 
-		return ret_vec;
-	}
-
-	//gets vector of all values parsed and a zero lenght vector if nothing was found	
-	template <> std::vector<bool> Arg<bool>::getValVec()
-	{
-		std::vector<bool> ret_vec;
-		
-		if(found)
-			ret_vec.push_back(!def_val);
-	 
-		return ret_vec;
 	}
 }

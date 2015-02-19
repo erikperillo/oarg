@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 	Arg<string> filename("-F --filename","","Filename to read configuration file from");
 	ival2 = ival;	
 
-	Oarg::parse(argc,argv);
+	parse(argc,argv);
 	
 	if(help.getVal())
 	{
@@ -50,7 +50,7 @@ int main(int argc, char** argv)
 	
 	if((filename.wasFound()?(fl = filename.getVal()):(fl = filename.getRelVal(argc,argv))) != "")
 	{
-		if(Oarg::parse(fl) < 0)
+		if(parse(fl) < 0)
 		{
 			cout << "file '" << fl << "' could not be open!" << endl;
 			return -1;
