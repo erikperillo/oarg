@@ -24,17 +24,48 @@ int main(int argc, char** argv)
 	std::string fl;
 
 	Arg<bool> help("-----------h -----------help",false,"This help message");
-	Arg<bool> version("-v --version::::::::::::::::::::::",false,"Version and program information");
-	Arg<int> ival("-i --int-value",-2,"Integer value");
+	Arg<bool> version("-v -version::::::::::::::::::::::",false,"Version and program information");
+	Arg<int> ival("-i --int-value",-1,"Integer value",1);
 	Arg<> ival2;
-	Arg<double> dval("-d double-val",3.141592,"Double value");
-	Arg<float> fval("-f --float-val",-0.9,"Float value");
-	Arg<string> sval("-s --string-val","string 1","String number one");
-	Arg<string> filename("-F --filename","","Filename to read configuration file from");
+	Arg<double> dval("-d double-val",3.141592,"Double value",1);
+	Arg<float> fval("-f --float-val",-0.9,"Float value",1);
+	Arg<string> sval("-s --string-val","string 1","String number one",1);
+	Arg<string> filename("-F --filename","","Filename to read configuration file from",1);
 	ival2 = ival;	
 
 	parse(argc,argv);
+
+	cout << "values from Command line:" << endl;
 	
+	double res = dval.getVal()*ival.getVal();
+
+	cout << "ival = " << ival.getVal() << " <> ";
+	printvec(ival.getValVec());
+	
+	cout << "ival2 = " << ival2.getVal() << " <> ";
+	printvec(ival2.getValVec());
+	
+	cout << "dval = " << dval.getVal() << " <> ";
+	printvec(dval.getValVec());
+	
+	cout << "fval = " << fval.getVal() << " <> ";
+	printvec(fval.getValVec());
+	
+	cout << "sval = " << sval.getVal() << " <> ";
+	printvec(sval.getValVec());
+	
+	cout << "version = " << (version.getVal()?"true":"false") << " <> ";
+	printvec(version.getValVec());
+	
+	cout << "help = " << (help.getVal()?"true":"false") << " <> ";
+	printvec(help.getValVec());
+	
+	cout << "filename = " << filename.getVal() << " <> ";
+	printvec(filename.getValVec());
+	
+	cout << "res (ival*dval) = " << res << endl;	
+
+
 	if(help.getVal())
 	{
 		Oarg::describe("Parameters:");
@@ -48,33 +79,41 @@ int main(int argc, char** argv)
 		return 0;
 	}
 	
-	if((filename.wasFound()?(fl = filename.getVal()):(fl = filename.getRelVal(argc,argv))) != "")
+	if(filename.wasFound())
 	{
+		fl = filename.getVal();
 		if(parse(fl) < 0)
 		{
 			cout << "file '" << fl << "' could not be open!" << endl;
 			return -1;
 		}
 		cout << "values from configuration file '" << fl << "':" << endl;
+		
+		cout << "ival = " << ival.getVal() << " <> ";
+		printvec(ival.getValVec());
+		
+		cout << "ival2 = " << ival2.getVal() << " <> ";
+		printvec(ival2.getValVec());
+		
+		cout << "dval = " << dval.getVal() << " <> ";
+		printvec(dval.getValVec());
+		
+		cout << "fval = " << fval.getVal() << " <> ";
+		printvec(fval.getValVec());
+		
+		cout << "sval = " << sval.getVal() << " <> ";
+		printvec(sval.getValVec());
+		
+		cout << "version = " << (version.getVal()?"true":"false") << " <> ";
+		printvec(version.getValVec());
+		
+		cout << "help = " << (help.getVal()?"true":"false") << " <> ";
+		printvec(help.getValVec());
+		
+		cout << "filename = " << filename.getVal() << " <> ";
+		printvec(filename.getValVec());
+		
+		cout << "res (ival*dval) = " << res << endl;	
 	}
-	else
-		cout << "values from Command line:" << endl;
-	
-	double res = dval.getVal()*ival.getVal();
-
-	cout << "ival = " << (ival.wasFound()?ival.getVal():ival.getRelVal(argc,argv,2)) << endl;
-	printvec(ival.getValVec());
-	ival.getValVec();
-	cout << "dval = " << (dval.wasFound()?dval.getVal():dval.getRelVal(argc,argv,3)) << endl;
-	printvec(dval.getValVec());
-	dval.getValVec();
-	cout << "fval = " << (fval.wasFound()?fval.getVal():fval.getRelVal(argc,argv,4)) << endl;
-	printvec(fval.getValVec());
-	fval.getValVec();
-	cout << "sval = " << (sval.wasFound()?sval.getVal():sval.getRelVal(argc,argv,5)) << endl;
-	printvec(sval.getValVec());
-	sval.getValVec();
-	cout << "res (ival*dval) = " << res << endl;	
-
 	return 0;
 }

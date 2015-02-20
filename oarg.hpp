@@ -19,6 +19,7 @@ std::cout << "[oarg@debug] " << msg << std::endl
 
 namespace oarg
 {
+	std::vector<std::string> split(const std::string& src_str, const std::string& delim = ",");
 	void parse(int argc, char** argv, bool clear = true);
 	int parse(const std::string& filename, bool clear = true);
 
@@ -27,7 +28,7 @@ namespace oarg
 	{
 		public:
 		//ctors and dtors
-		Oarg(const std::string& names, const std::string& description = "");
+		Oarg(const std::string& names, const std::string& description, int pos_n_found = 0);
 		Oarg(const Oarg& oarg);
 		Oarg(); 
 		~Oarg();
@@ -35,6 +36,7 @@ namespace oarg
 		//routines
 		virtual Oarg& operator=(const Oarg& oarg);
 		static void describe(const std::string& helpmsg = "");
+		int getId();
 
 		private:
 		static std::string pureName(const std::string& name);
@@ -43,9 +45,10 @@ namespace oarg
 
 		protected:
 		virtual void setVec() = 0;
+		virtual void clear() = 0;
 		static bool isClName(const std::string& word);
 		//variables
-		int id;
+		int id,pos_n_found;
 		bool found;
 		std::vector<std::string> names;
 		std::string description;
@@ -62,7 +65,7 @@ namespace oarg
 	{
 		public:
 		//ctors and dtors
-		Arg(const std::string& names, const Tp& def_val, const std::string& description = "");
+		Arg(const std::string& names, const Tp& def_val, const std::string& description, int pos_n_found = 0);
 		Arg(const Arg& clarg);
 		Arg(); 
 		~Arg();
@@ -74,20 +77,18 @@ namespace oarg
 		bool wasFound();
 		int nParsedVals();
 		Tp getVal(int index = 0);
-		Tp getRelVal(int argc, char** argv, int pos = 1);
 		std::vector<Tp> getValVec();
 
 		private:
 		//routines		
 		void setVec();
+		void clear();
 		//variables
+		int pos_n_found;
 		Tp def_val;
 		std::vector<Tp> val_vec;
 	};
-
-	//including implementation of template methods
-	#include "arg.tpp"
-
+	
 	//container of argument describers
 	class Container
 	{
@@ -96,13 +97,17 @@ namespace oarg
 		static int add(Oarg* oarg_ptr, bool is_repeated = false);
  		static std::vector<bool> repeated;	
 		static std::vector<Oarg*> oargs;
+		static std::vector<std::string> arg_vec;
 
 		//declaration of friend class
 		friend class Oarg;
+		template <class Tp> friend class Arg;
 		friend void parse(int argc, char** argv, bool clear);
 		friend int parse(const std::string& filename, bool clear);
 	};
 
+	//including implementation of template methods
+	#include "arg.tpp"
 }
 
 #endif

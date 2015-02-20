@@ -6,10 +6,9 @@
 #include "oarg.hpp"
 
 //class Oarg implementations
-
 //ctors
-oarg::Oarg::Oarg(const std::string& names, const std::string& description):
-description(description), found(false)
+oarg::Oarg::Oarg(const std::string& names, const std::string& description, int pos_n_found):
+description(description), found(false), pos_n_found(pos_n_found)
 {
 	#if DEBUG
      debugmsg("Oarg(cl,names,def_val,description)");
@@ -36,7 +35,7 @@ found(oarg.found), str_vals(oarg.str_vals), names(oarg.names), description(oarg.
 }
 
 oarg::Oarg::Oarg(): 
-id(-1), found(false)
+id(-1), found(false), pos_n_found(0)
 {
 	#if DEBUG
      debugmsg("Oarg()");
@@ -50,7 +49,8 @@ oarg::Oarg& oarg::Oarg::operator=(const oarg::Oarg& oarg)
      debugmsg("Oarg::operator=(oarg)");
 	#endif
 
-     id = Container::add(this,true);
+	id = oarg.id;
+     Container::add(this,true);
      names = oarg.names;
 	description = oarg.description;
 
@@ -65,40 +65,123 @@ oarg::Oarg::~Oarg()
 	#endif
 }
 
+//splits a string
+std::vector<std::string> oarg::split(const std::string& src_str, const std::string& delim)
+{
+     std::string str = src_str;
+     std::vector<std::string> str_vec;
+
+     for(int i=0; i<str.size(); i++)
+     {
+          for(int j=0; j<delim.size(); j++)
+          {
+               if(str[i] == delim[j])
+               {
+                    if(i > 0 && str[i-1] == '\\')
+                    {
+                         str.erase(i-1,1);
+                         i--;
+                    }
+                    else
+                    {
+                         if(str.substr(0,i) != "")
+                              str_vec.push_back(str.substr(0,i));
+                         str = str.substr(i+1,str.size()-i);
+                         i=-1;
+                         break;
+                    }
+               }
+          }
+     }
+     if(str != "")
+          str_vec.push_back(str);
+
+     return str_vec;
+}
+
 //parsing from command line routine
 void oarg::parse(int argc, char** argv, bool clear)
 {
      oarg::Oarg* oarg_ptr;
-	std::string arg;
+	std::vector<std::string> str_vec;
+	int 	index, aux;
+		//times_to_del;
+	std::vector<int> pos_vec;
 
+	for(int i=0; i<argc; i++)
+		Container::arg_vec.push_back(argv[i]);
+	
 	for(int i=0; i<Container::oargs.size(); i++)
 	{	
+		if(Container::repeated[i])
+			continue;	
+
 		oarg_ptr = Container::oargs[i];
+		
+		if(oarg_ptr->pos_n_found > 0)
+		{
+			index = 0;
+			pos_vec.insert(pos_vec.begin(),i);	
+			
+			for(int j=1; j<pos_vec.size(); j++)
+			{
+				if(Container::oargs[pos_vec[j-1]]->pos_n_found >= Container::oargs[pos_vec[j]]->pos_n_found)
+				{
+					aux = pos_vec[j];
+					pos_vec[j] = pos_vec[j-1];
+					pos_vec[j-1] = aux;
+					index = j;
+				}		
+			}
+		}
 
 		if(clear)
-		{
-			oarg_ptr->found = false;
-			oarg_ptr->str_vals.clear();
-		}
-
-		for(int j=0; j<argc; j++)
+			oarg_ptr->clear();
+		
+		for(int j=0; j<Container::arg_vec.size(); j++)
 		{
 			for(int k=0; k<oarg_ptr->names.size(); k++)
-				if(argv[j] == Oarg::clName(oarg_ptr->names[k]))
+				if(Container::arg_vec[j] == Oarg::clName(oarg_ptr->names[k]))
 				{
 					oarg_ptr->found = true;
-					for(int l=j+1; l<argc && !Oarg::isClName(argv[l]); l++)
-					{
-						arg = std::string(argv[l]);
-						if(arg.substr(0,2) == "\\-")
-							arg = arg.substr(1,arg.size()-1);
-						oarg_ptr->str_vals.push_back(arg);
-					}
+
+					if(oarg_ptr->pos_n_found > 0)
+						pos_vec.erase(pos_vec.begin() + index);
+					
+					if(j+1<Container::arg_vec.size() && !Oarg::isClName(Container::arg_vec[j+1]))
+						oarg_ptr->str_vals = split(Container::arg_vec[j+1]);
+				
+					for(int l=0; l<((j+1<Container::arg_vec.size())?2:1); l++)
+						Container::arg_vec.erase(Container::arg_vec.begin()+j);
+				
+					oarg_ptr->setVec();
+					
+					break;
 				}
 		}
-
-		oarg_ptr->setVec();
 	}
+	
+	for(int i=0; i<pos_vec.size(); i++)
+	{
+		oarg_ptr = Container::oargs[pos_vec[i]]; 
+
+		if(Container::arg_vec.size() > 1)
+		{
+			oarg_ptr->str_vals = split(Container::arg_vec[1]);
+			oarg_ptr->found = true;
+			Container::arg_vec.erase(Container::arg_vec.begin());
+			oarg_ptr->setVec();
+		}
+	}	
+
+	for(int i=0; i<Container::oargs.size(); i++)
+		if(Container::repeated[i])
+		{
+			oarg_ptr = Container::oargs[i];
+			oarg_ptr->str_vals = Container::oargs[oarg_ptr->getId()]->str_vals;
+			oarg_ptr->setVec();
+			continue;
+		}
 }
 
 //parsing from file routine
@@ -117,10 +200,7 @@ int oarg::parse(const std::string& filename, bool clear)
 		oarg_ptr = Container::oargs[i];
 		
 		if(clear)
-		{
-			oarg_ptr->found = false;
-			oarg_ptr->str_vals.clear();
-		}
+			oarg_ptr->clear();
 		
 		while(std::getline(in_file,line))
 		{
@@ -152,6 +232,7 @@ int oarg::parse(const std::string& filename, bool clear)
 							}
 							oarg_ptr->str_vals.push_back(val);
 						}
+						oarg_ptr->setVec();
 					}
 			}
 			ss.str(std::string());
@@ -227,11 +308,17 @@ void oarg::Oarg::describe(const std::string& helpmsg)
      return;
 }
 
+int oarg::Oarg::getId()
+{
+	return id;
+}
+
 //class Container definitions
 
 //definition of static class Oarg data members
 std::vector<oarg::Oarg*> oarg::Container::oargs;
 std::vector<bool> oarg::Container::repeated;
+std::vector<std::string> oarg::Container::arg_vec;
 
 //adds Oarg descriptions to list and returns id of Oarg in list
 int oarg::Container::add(Oarg* oarg_ptr, bool is_repeated)
@@ -254,40 +341,7 @@ namespace oarg
 	//gets value stored in str_vals
 	template<> void oarg::Arg<bool>::setVec()
 	{
-		if(found)
-			val_vec.push_back(!def_val);
+		val_vec.push_back((found?((str_vals.size()>0)?((str_vals[0]=="true")?true:false):(!def_val)):(def_val)));
 	}
 
-	//gets "pos" nth value not defined after clname 
-	template<> std::string Arg<std::string>::getRelVal(int argc, char** argv, int pos)
-	{
-		std::string val = def_val;		
-
-		for(int i=0; i<argc && !Oarg::isClName(argv[i]); i++)
-			if(pos == i)
-			{
-				val = std::string(argv[i]);
-				if(val.substr(0,2) == "\\-")
-					val = val.substr(1,val.size()-1);
-			}
-
-		return val;
-	}
-	
-	//gets "pos" nth value not defined after clname 
-	template<> bool Arg<bool>::getRelVal(int argc, char** argv, int pos)
-	{
-		bool val = def_val;
-		
-		for(int i=0; i<argc && !Oarg::isClName(argv[i]); i++)
-			if(pos == i)
-			{
-				if(std::string(argv[i]) == "true")
-					val = true;
-				else if(std::string(argv[i]) == "false")
-					val = false;
-			}
-
-		return val;
-	}
 }

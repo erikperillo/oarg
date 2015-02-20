@@ -5,8 +5,8 @@
 
 //ctors
 template <class Tp> 
-Arg<Tp>::Arg(const std::string& names, const Tp& def_val, const std::string& description):
-Oarg(names,description), def_val(def_val)
+Arg<Tp>::Arg(const std::string& names, const Tp& def_val, const std::string& description, int pos_n_found):
+Oarg(names,description,pos_n_found), def_val(def_val)
 {
 	#if DEBUG
 	debugmsg("Arg(names,def_val,description)");
@@ -76,23 +76,6 @@ Tp Arg<Tp>::getVal(int index)
 	return def_val;		
 }
 
-//gets "pos" th value not defined by clname in parsing
-template <class Tp>
-Tp Arg<Tp>::getRelVal(int argc, char** argv, int pos)
-{
-	std::stringstream ss;
-	Tp ret_val;
-
-	for(int i=0; i<argc && !Oarg::isClName(argv[i]); i++)
-		if(i == pos)
-		{
-			ss.str(argv[i]);
-			return (ss >> ret_val)?ret_val:def_val;
-		}
-
-	return def_val;
-}
-
 //returns vector of parsed values and zero lenght vector if nothing was found
 template <class Tp>
 std::vector<Tp> Arg<Tp>::getValVec()
@@ -116,4 +99,12 @@ void Arg<Tp>::setVec()
 		ss.str(std::string());
 		ss.clear();
 	}	
+}
+
+template <class Tp>
+void Arg<Tp>::clear()
+{
+	found = false;
+	str_vals.clear();
+	val_vec.clear();	
 }
