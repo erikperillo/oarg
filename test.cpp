@@ -25,12 +25,12 @@ int main(int argc, char** argv)
 
 	Arg<bool> help("-----------h -----------help",false,"This help message");
 	Arg<bool> version("-v -version::::::::::::::::::::::",false,"Version and program information");
-	Arg<int> ival("-i --int-value",-1,"Integer value",1);
+	Arg<int> ival("-i --int-value",-1,"Integer value",2);
 	Arg<> ival2;
 	Arg<double> dval("-d double-val",3.141592,"Double value",1);
-	Arg<float> fval("-f --float-val",-0.9,"Float value",1);
-	Arg<string> sval("-s --string-val","string 1","String number one",1);
-	Arg<string> filename("-F --filename","","Filename to read configuration file from",1);
+	Arg<float> fval("-f --float-val",-0.9,"Float value",3);
+	Arg<string> sval("-s --string-val","string 1","String number one",5);
+	Arg<string> filename("-F --filename","","Filename to read configuration file from",4);
 	ival2 = ival;	
 
 	parse(argc,argv);
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 
 	if(help.getVal())
 	{
-		Oarg::describe("Parameters:");
+		describeArgs("Parameters:");
 		return 0;
 	}
 

@@ -308,6 +308,11 @@ void oarg::Oarg::describe(const std::string& helpmsg)
      return;
 }
 
+void oarg::describeArgs(const std::string& helpmsg)
+{
+	Oarg::describe(helpmsg);
+}
+
 int oarg::Oarg::getId()
 {
 	return id;

@@ -22,7 +22,8 @@ namespace oarg
 	std::vector<std::string> split(const std::string& src_str, const std::string& delim = ",");
 	void parse(int argc, char** argv, bool clear = true);
 	int parse(const std::string& filename, bool clear = true);
-
+	void describeArgs(const std::string& helpmsg = "");
+	
 	//class for describing a command line argument 
 	class Oarg
 	{
@@ -35,13 +36,13 @@ namespace oarg
  
 		//routines
 		virtual Oarg& operator=(const Oarg& oarg);
-		static void describe(const std::string& helpmsg = "");
 		int getId();
 
 		private:
 		static std::string pureName(const std::string& name);
 		static std::string clName(const std::string& name);
 		static std::string cfName(const std::string& name);
+		static void describe(const std::string& helpmsg = "");
 
 		protected:
 		virtual void setVec() = 0;
@@ -57,6 +58,7 @@ namespace oarg
 		//friends declaration
 		friend void parse(int argc, char** argv, bool clear);
 		friend int parse(const std::string& filename, bool clear);
+		friend void describeArgs(const std::string&);
 	};
 
 	//class which includes values	
