@@ -33,7 +33,11 @@ int main(int argc, char** argv)
 	Arg<string> filename("-F --filename","","Filename to read configuration file from",4);
 	ival2 = ival;	
 
-	parse(argc,argv);
+	if(parse(argc,argv) != 0)
+	{
+		cout << "ERROR: unknown option '" << Oarg::getUnknownOption() << "'" << endl;
+		return -1;
+	}
 
 	cout << "values from Command line:" << endl;
 	

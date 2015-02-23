@@ -65,6 +65,16 @@ oarg::Oarg::~Oarg()
 	#endif
 }
 
+//definition of oarg static vars
+std::vector<std::string> oarg::Oarg::unknown_options;
+
+std::string oarg::Oarg::getUnknownOption(int index)
+{
+	if(index < unknown_options.size())
+		return unknown_options[index];
+	return std::string("");
+}
+
 //splits a string
 std::vector<std::string> oarg::split(const std::string& src_str, const std::string& delim)
 {
@@ -100,7 +110,7 @@ std::vector<std::string> oarg::split(const std::string& src_str, const std::stri
 }
 
 //parsing from command line routine
-void oarg::parse(int argc, char** argv, bool clear)
+int oarg::parse(int argc, char** argv, bool clear)
 {
      oarg::Oarg* oarg_ptr;
 	std::vector<std::string> str_vec;
@@ -182,6 +192,12 @@ void oarg::parse(int argc, char** argv, bool clear)
 			oarg_ptr->setVec();
 			continue;
 		}
+
+	for(int i=0; i<Container::arg_vec.size(); i++)
+		if(Oarg::isClName(Container::arg_vec[i]))
+			Oarg::unknown_options.push_back(Container::arg_vec[i]);
+
+	return Oarg::unknown_options.size();
 }
 
 //parsing from file routine

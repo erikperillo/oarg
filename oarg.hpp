@@ -20,7 +20,7 @@ std::cout << "[oarg@debug] " << msg << std::endl
 namespace oarg
 {
 	std::vector<std::string> split(const std::string& src_str, const std::string& delim = ",");
-	void parse(int argc, char** argv, bool clear = true);
+	int parse(int argc, char** argv, bool clear = true);
 	int parse(const std::string& filename, bool clear = true);
 	void describeArgs(const std::string& helpmsg = "");
 	
@@ -36,6 +36,7 @@ namespace oarg
  
 		//routines
 		virtual Oarg& operator=(const Oarg& oarg);
+		static std::string getUnknownOption(int index = 0);
 		int getId();
 
 		private:
@@ -43,7 +44,9 @@ namespace oarg
 		static std::string clName(const std::string& name);
 		static std::string cfName(const std::string& name);
 		static void describe(const std::string& helpmsg = "");
-
+		//holds unknown options in case of error
+		static std::vector<std::string> unknown_options;	
+		
 		protected:
 		virtual void setVec() = 0;
 		virtual void clear() = 0;
@@ -53,10 +56,10 @@ namespace oarg
 		bool found;
 		std::vector<std::string> names;
 		std::string description;
-		std::vector<std::string> str_vals;	
+		std::vector<std::string> str_vals;
 
 		//friends declaration
-		friend void parse(int argc, char** argv, bool clear);
+		friend int parse(int argc, char** argv, bool clear);
 		friend int parse(const std::string& filename, bool clear);
 		friend void describeArgs(const std::string&);
 	};
@@ -104,7 +107,7 @@ namespace oarg
 		//declaration of friend class
 		friend class Oarg;
 		template <class Tp> friend class Arg;
-		friend void parse(int argc, char** argv, bool clear);
+		friend int parse(int argc, char** argv, bool clear);
 		friend int parse(const std::string& filename, bool clear);
 	};
 
