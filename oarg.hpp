@@ -22,20 +22,20 @@ namespace oarg
 	std::vector<std::string> split(const std::string& src_str, const std::string& delim = ",");
 	int parse(int argc, char** argv, bool clear = true);
 	int parse(const std::string& filename, bool clear = true);
-	void describeArgs(const std::string& helpmsg = "");
+	void describeOargs(const std::string& helpmsg = "");
 	
 	//class for describing a command line argument 
-	class Oarg
+	class OargBase
 	{
 		public:
 		//ctors and dtors
-		Oarg(const std::string& names, const std::string& description, int pos_n_found = 0);
-		Oarg(const Oarg& oarg);
-		Oarg(); 
-		~Oarg();
+		OargBase(const std::string& names, const std::string& description, int pos_n_found = 0);
+		OargBase(const OargBase& oarg);
+		OargBase(); 
+		~OargBase();
  
 		//routines
-		virtual Oarg& operator=(const Oarg& oarg);
+		virtual OargBase& operator=(const OargBase& oarg);
 		static std::string getUnknownOption(int index = 0);
 		int getId();
 
@@ -61,22 +61,22 @@ namespace oarg
 		//friends declaration
 		friend int parse(int argc, char** argv, bool clear);
 		friend int parse(const std::string& filename, bool clear);
-		friend void describeArgs(const std::string&);
+		friend void describeOargs(const std::string&);
 	};
 
 	//class which includes values	
 	template <class Tp = int>
-	class Arg: public Oarg
+	class Oarg: public OargBase
 	{
 		public:
 		//ctors and dtors
-		Arg(const std::string& names, const Tp& def_val, const std::string& description, int pos_n_found = 0);
-		Arg(const Arg& clarg);
-		Arg(); 
-		~Arg();
+		Oarg(const std::string& names, const Tp& def_val, const std::string& description, int pos_n_found = 0);
+		Oarg(const Oarg& clarg);
+		Oarg(); 
+		~Oarg();
 
 		//routines
-		Arg& operator=(const Arg& clarg);
+		Oarg& operator=(const Oarg& clarg);
 
 		//getters
 		bool wasFound();
@@ -99,14 +99,14 @@ namespace oarg
 	{
 		private:
 		//routines
-		static int add(Oarg* oarg_ptr, bool is_repeated = false);
+		static int add(OargBase* oarg_ptr, bool is_repeated = false);
  		static std::vector<bool> repeated;	
-		static std::vector<Oarg*> oargs;
+		static std::vector<OargBase*> oargs;
 		static std::vector<std::string> arg_vec;
 
 		//declaration of friend class
-		friend class Oarg;
-		template <class Tp> friend class Arg;
+		friend class OargBase;
+		template <class Tp> friend class Oarg;
 		friend int parse(int argc, char** argv, bool clear);
 		friend int parse(const std::string& filename, bool clear);
 	};

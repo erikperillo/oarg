@@ -1,17 +1,17 @@
 /* oarg - a simple command line/file parser 
 ** by Erik Perillo 
 **
-** Implementation of routines of classes Oarg and Container */ 
+** Implementation of routines of classes OargBase and Container */ 
 
 #include "oarg.hpp"
 
-//class Oarg implementations
+//class OargBase implementations
 //ctors
-oarg::Oarg::Oarg(const std::string& names, const std::string& description, int pos_n_found):
+oarg::OargBase::OargBase(const std::string& names, const std::string& description, int pos_n_found):
 description(description), found(false), pos_n_found(pos_n_found)
 {
 	#if DEBUG
-     debugmsg("Oarg(cl,names,def_val,description)");
+     debugmsg("OargBase(cl,names,def_val,description)");
 	#endif
 
 	std::stringstream ss(names);
@@ -24,29 +24,29 @@ description(description), found(false), pos_n_found(pos_n_found)
 	id = Container::add(this);
 }
 
-oarg::Oarg::Oarg(const oarg::Oarg& oarg): 
+oarg::OargBase::OargBase(const oarg::OargBase& oarg): 
 found(oarg.found), str_vals(oarg.str_vals), names(oarg.names), description(oarg.description)
 {
 	#if DEBUG
-     debugmsg("Oarg(oarg)");
+     debugmsg("OargBase(oarg)");
 	#endif
 
 	id = Container::add(this,true);
 }
 
-oarg::Oarg::Oarg(): 
+oarg::OargBase::OargBase(): 
 id(-1), found(false), pos_n_found(0)
 {
 	#if DEBUG
-     debugmsg("Oarg()");
+     debugmsg("OargBase()");
 	#endif
 }
 
 //operator= overload
-oarg::Oarg& oarg::Oarg::operator=(const oarg::Oarg& oarg)
+oarg::OargBase& oarg::OargBase::operator=(const oarg::OargBase& oarg)
 {
 	#if DEBUG
-     debugmsg("Oarg::operator=(oarg)");
+     debugmsg("OargBase::operator=(oarg)");
 	#endif
 
 	id = oarg.id;
@@ -58,17 +58,17 @@ oarg::Oarg& oarg::Oarg::operator=(const oarg::Oarg& oarg)
 }
 
 //dtor
-oarg::Oarg::~Oarg()
+oarg::OargBase::~OargBase()
 {
 	#if DEBUG
-     debugmsg("~Oarg()");
+     debugmsg("~OargBase()");
 	#endif
 }
 
 //definition of oarg static vars
-std::vector<std::string> oarg::Oarg::unknown_options;
+std::vector<std::string> oarg::OargBase::unknown_options;
 
-std::string oarg::Oarg::getUnknownOption(int index)
+std::string oarg::OargBase::getUnknownOption(int index)
 {
 	if(index < unknown_options.size())
 		return unknown_options[index];
@@ -112,7 +112,7 @@ std::vector<std::string> oarg::split(const std::string& src_str, const std::stri
 //parsing from command line routine
 int oarg::parse(int argc, char** argv, bool clear)
 {
-     oarg::Oarg* oarg_ptr;
+     oarg::OargBase* oarg_ptr;
 	std::vector<std::string> str_vec;
 	int 	index, aux;
 		//times_to_del;
@@ -151,14 +151,14 @@ int oarg::parse(int argc, char** argv, bool clear)
 		for(int j=0; j<Container::arg_vec.size(); j++)
 		{
 			for(int k=0; k<oarg_ptr->names.size(); k++)
-				if(Container::arg_vec[j] == Oarg::clName(oarg_ptr->names[k]))
+				if(Container::arg_vec[j] == OargBase::clName(oarg_ptr->names[k]))
 				{
 					oarg_ptr->found = true;
 
 					if(oarg_ptr->pos_n_found > 0)
 						pos_vec.erase(pos_vec.begin() + index);
 					
-					if(j+1<Container::arg_vec.size() && !Oarg::isClName(Container::arg_vec[j+1]))
+					if(j+1<Container::arg_vec.size() && !OargBase::isClName(Container::arg_vec[j+1]))
 						oarg_ptr->str_vals = split(Container::arg_vec[j+1]);
 				
 					for(int l=0; l<((j+1<Container::arg_vec.size())?2:1); l++)
@@ -175,7 +175,7 @@ int oarg::parse(int argc, char** argv, bool clear)
 	{
 		oarg_ptr = Container::oargs[pos_vec[i]]; 
 
-		if(Container::arg_vec.size() > 1)
+		if(Container::arg_vec.size() > 1 && !OargBase::isClName(Container::arg_vec[1]))
 		{
 			oarg_ptr->str_vals = split(Container::arg_vec[1]);
 			oarg_ptr->found = true;
@@ -194,10 +194,10 @@ int oarg::parse(int argc, char** argv, bool clear)
 		}
 
 	for(int i=0; i<Container::arg_vec.size(); i++)
-		if(Oarg::isClName(Container::arg_vec[i]))
-			Oarg::unknown_options.push_back(Container::arg_vec[i]);
+		if(OargBase::isClName(Container::arg_vec[i]))
+			OargBase::unknown_options.push_back(Container::arg_vec[i]);
 
-	return Oarg::unknown_options.size();
+	return OargBase::unknown_options.size();
 }
 
 //parsing from file routine
@@ -206,7 +206,7 @@ int oarg::parse(const std::string& filename, bool clear)
 	std::ifstream in_file(filename.c_str());
 	std::stringstream ss;
 	std::string line,word,val;
-	oarg::Oarg* oarg_ptr;
+	oarg::OargBase* oarg_ptr;
 
 	if(!in_file.is_open())
 		return -1;
@@ -224,7 +224,7 @@ int oarg::parse(const std::string& filename, bool clear)
 			while(ss >> word)
 			{
 				for(int j=0; j<oarg_ptr->names.size(); j++)
-					if(word == Oarg::cfName(oarg_ptr->names[j]))
+					if(word == OargBase::cfName(oarg_ptr->names[j]))
 					{
 						oarg_ptr->found = true;
 						while(ss >> word)
@@ -261,7 +261,7 @@ int oarg::parse(const std::string& filename, bool clear)
 }
 
 //removes "-" chars from beggining and ":" chars from end
-std::string oarg::Oarg::pureName(const std::string& name)
+std::string oarg::OargBase::pureName(const std::string& name)
 {	
 	std::string ret = std::string(name);
 
@@ -275,7 +275,7 @@ std::string oarg::Oarg::pureName(const std::string& name)
 }
 
 //formats pure name to clarg name format 
-std::string oarg::Oarg::clName(const std::string& pure_name)
+std::string oarg::OargBase::clName(const std::string& pure_name)
 {
 	std::string ret = std::string(pure_name);
 	
@@ -285,13 +285,13 @@ std::string oarg::Oarg::clName(const std::string& pure_name)
 }
 
 //formats pure name to configuration file name format
-std::string oarg::Oarg::cfName(const std::string& pure_name)
+std::string oarg::OargBase::cfName(const std::string& pure_name)
 {
 	return pure_name + ":";
 }
 
 //returns true if word is a command line name
-bool oarg::Oarg::isClName(const std::string& word)
+bool oarg::OargBase::isClName(const std::string& word)
 {
 	if(word.size() < 2)
 		return (word[0]=='-');
@@ -299,11 +299,11 @@ bool oarg::Oarg::isClName(const std::string& word)
 }
 
 //lists arguments in command line names format and it's descriptions
-void oarg::Oarg::describe(const std::string& helpmsg)
+void oarg::OargBase::describe(const std::string& helpmsg)
 {
      int j;
      std::string line;
-	oarg::Oarg* oarg_ptr;
+	oarg::OargBase* oarg_ptr;
 
      if(helpmsg!="")
           std::cout << helpmsg << std::endl;
@@ -314,8 +314,8 @@ void oarg::Oarg::describe(const std::string& helpmsg)
 			oarg_ptr = Container::oargs[i]; 
 			line = "\t";
 			for(j=0; j<oarg_ptr->names.size()-1; j++)
-				line +=  Oarg::clName(oarg_ptr->names[j]) + ", ";
-			line += Oarg::clName(oarg_ptr->names[j]);
+				line +=  OargBase::clName(oarg_ptr->names[j]) + ", ";
+			line += OargBase::clName(oarg_ptr->names[j]);
 			std::cout << std::left << std::setw(48) << line;
 			line = " " + oarg_ptr->description;
 			std::cout << std::left << std::setw(32) << line << std::endl;
@@ -324,43 +324,43 @@ void oarg::Oarg::describe(const std::string& helpmsg)
      return;
 }
 
-void oarg::describeArgs(const std::string& helpmsg)
+void oarg::describeOargs(const std::string& helpmsg)
 {
-	Oarg::describe(helpmsg);
+	OargBase::describe(helpmsg);
 }
 
-int oarg::Oarg::getId()
+int oarg::OargBase::getId()
 {
 	return id;
 }
 
 //class Container definitions
 
-//definition of static class Oarg data members
-std::vector<oarg::Oarg*> oarg::Container::oargs;
+//definition of static class OargBase data members
+std::vector<oarg::OargBase*> oarg::Container::oargs;
 std::vector<bool> oarg::Container::repeated;
 std::vector<std::string> oarg::Container::arg_vec;
 
-//adds Oarg descriptions to list and returns id of Oarg in list
-int oarg::Container::add(Oarg* oarg_ptr, bool is_repeated)
+//adds OargBase descriptions to list and returns id of OargBase in list
+int oarg::Container::add(OargBase* oarg_ptr, bool is_repeated)
 {
 	oargs.push_back(oarg_ptr);
 	repeated.push_back(is_repeated);
 	return oargs.size() - 1;
 }
 
-//specializations of some template class Arg routines
+//specializations of some template class Oarg routines
 namespace oarg
 {
 	//gets value stored in str_vals
-	template<> void oarg::Arg<std::string>::setVec()
+	template<> void oarg::Oarg<std::string>::setVec()
 	{
 		for(int i=0; i<str_vals.size(); i++)
 			val_vec.push_back(str_vals[i]);
 	}
 
 	//gets value stored in str_vals
-	template<> void oarg::Arg<bool>::setVec()
+	template<> void oarg::Oarg<bool>::setVec()
 	{
 		val_vec.push_back((found?((str_vals.size()>0)?((str_vals[0]=="true")?true:false):(!def_val)):(def_val)));
 	}

@@ -1,52 +1,52 @@
 /* oarg - a simple command line/file parser
 ** by Erik Perillo 
 **
-** Implementation of template class Arg */
+** Implementation of template class Oarg */
 
 //ctors
 template <class Tp> 
-Arg<Tp>::Arg(const std::string& names, const Tp& def_val, const std::string& description, int pos_n_found):
-Oarg(names,description,pos_n_found), def_val(def_val)
+Oarg<Tp>::Oarg(const std::string& names, const Tp& def_val, const std::string& description, int pos_n_found):
+OargBase(names,description,pos_n_found), def_val(def_val)
 {
 	#if DEBUG
-	debugmsg("Arg(names,def_val,description)");
+	debugmsg("Oarg(names,def_val,description)");
 	#endif
 }
 
 template <class Tp> 
-Arg<Tp>::Arg(const Arg& arg): Oarg(arg), def_val(arg.def_val)
+Oarg<Tp>::Oarg(const Oarg& arg): OargBase(arg), def_val(arg.def_val)
 {
 	#if DEBUG
-	debugmsg("Arg(arg)");
+	debugmsg("Oarg(arg)");
 	#endif
 }
 
 template <class Tp> 
-Arg<Tp>::Arg(): Oarg()
+Oarg<Tp>::Oarg(): OargBase()
 {
 	#if DEBUG
-	debugmsg("Arg()");
+	debugmsg("Oarg()");
 	#endif
 }
 
 //dtor
 template <class Tp> 
-Arg<Tp>::~Arg()
+Oarg<Tp>::~Oarg()
 {
 	#if DEBUG
-	debugmsg("~Arg()");
+	debugmsg("~Oarg()");
 	#endif
 }
 
 //operator= overload
 template <class Tp> 
-Arg<Tp>& Arg<Tp>::operator=(const Arg& arg)
+Oarg<Tp>& Oarg<Tp>::operator=(const Oarg& arg)
 {
 	#if DEBUG
-	debugmsg("Arg::operator=(arg)");
+	debugmsg("Oarg::operator=(arg)");
 	#endif
 
-	Oarg::operator=(arg);
+	OargBase::operator=(arg);
 	def_val = arg.def_val;
 
 	return *this;
@@ -54,21 +54,21 @@ Arg<Tp>& Arg<Tp>::operator=(const Arg& arg)
 
 //encapsulation methods
 template <class Tp>
-bool Arg<Tp>::wasFound()
+bool Oarg<Tp>::wasFound()
 {
 	return found;
 }
 
 //return number of parsed values
 template <class Tp>
-int Arg<Tp>::nParsedVals()
+int Oarg<Tp>::nParsedVals()
 {
 	return val_vec.size();
 }
 
 //gets first "index" th of vector os parsed values
 template <class Tp>
-Tp Arg<Tp>::getVal(int index)
+Tp Oarg<Tp>::getVal(int index)
 {
 	if(index >= 0 && index < val_vec.size())
 		return val_vec[index];
@@ -78,13 +78,13 @@ Tp Arg<Tp>::getVal(int index)
 
 //returns vector of parsed values and zero lenght vector if nothing was found
 template <class Tp>
-std::vector<Tp> Arg<Tp>::getValVec()
+std::vector<Tp> Oarg<Tp>::getValVec()
 {
 	return val_vec;
 }
 
 template <class Tp>
-void Arg<Tp>::setVec()
+void Oarg<Tp>::setVec()
 {
 	std::stringstream ss;	
 	Tp dumb_val;
@@ -102,7 +102,7 @@ void Arg<Tp>::setVec()
 }
 
 template <class Tp>
-void Arg<Tp>::clear()
+void Oarg<Tp>::clear()
 {
 	found = false;
 	str_vals.clear();

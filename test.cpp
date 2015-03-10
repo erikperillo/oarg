@@ -23,19 +23,19 @@ int main(int argc, char** argv)
 {
 	std::string fl;
 
-	Arg<bool> help("-----------h -----------help",false,"This help message");
-	Arg<bool> version("-v -version::::::::::::::::::::::",false,"Version and program information");
-	Arg<int> ival("-i --int-value",-1,"Integer value",2);
-	Arg<> ival2;
-	Arg<double> dval("-d double-val",3.141592,"Double value",1);
-	Arg<float> fval("-f --float-val",-0.9,"Float value",3);
-	Arg<string> sval("-s --string-val","string 1","String number one",5);
-	Arg<string> filename("-F --filename","","Filename to read configuration file from",4);
+	Oarg<bool> help("-----------h -----------help",false,"This help message");
+	Oarg<bool> version("-v -version::::::::::::::::::::::",false,"Version and program information");
+	Oarg<int> ival("-i --int-value",-1,"Integer value",2);
+	Oarg<> ival2;
+	Oarg<double> dval("-d double-val",3.141592,"Double value",1);
+	Oarg<float> fval("-f --float-val",-0.9,"Float value",3);
+	Oarg<string> sval("-s --string-val","string 1","String number one",5);
+	Oarg<string> filename("-F --filename","","Filename to read configuration file from",4);
 	ival2 = ival;	
 
 	if(parse(argc,argv) != 0)
 	{
-		cout << "ERROR: unknown option '" << Oarg::getUnknownOption() << "'" << endl;
+		cout << "ERROR: unknown option '" << OargBase::getUnknownOption() << "'" << endl;
 		return -1;
 	}
 
@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 
 	if(help.getVal())
 	{
-		describeArgs("Parameters:");
+		describeOargs("Parameters:");
 		return 0;
 	}
 
