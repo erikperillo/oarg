@@ -113,12 +113,12 @@ std::vector<std::string> oarg::split(const std::string& src_str, const std::stri
 int oarg::parse(int argc, char** argv, bool clear)
 {
      oarg::OargBase* oarg_ptr;
-	std::vector<std::string> str_vec;
+	std::vector<std::string> splitted;
 	int 	index, aux;
-		//times_to_del;
+	bool past_had_comma;
 	std::vector<int> pos_vec;
 
-	for(int i=0; i<argc; i++)
+	for(int i=MAGIC_NUMBER; i<argc; i++)
 		Container::arg_vec.push_back(argv[i]);
 	
 	for(int i=0; i<Container::oargs.size(); i++)
@@ -152,34 +152,82 @@ int oarg::parse(int argc, char** argv, bool clear)
 		{
 			for(int k=0; k<oarg_ptr->names.size(); k++)
 				if(Container::arg_vec[j] == OargBase::clName(oarg_ptr->names[k]))
-				{
+				{ 
 					oarg_ptr->found = true;
 
 					if(oarg_ptr->pos_n_found > 0)
 						pos_vec.erase(pos_vec.begin() + index);
+		
+					past_had_comma = true;
+
+					Container::arg_vec.erase(Container::arg_vec.begin()+j);
+					while(j<Container::arg_vec.size() && !OargBase::isClName(Container::arg_vec[j]))
+					{	
+						std::string& word = Container::arg_vec[j];
+		
+						if(word[0] != ',' && word[word.size()-1] != ',')
+						{
+							if(!past_had_comma)
+								break;
+							past_had_comma = false;
+						}
+						else
+							past_had_comma = true;
 					
-					if(j+1<Container::arg_vec.size() && !OargBase::isClName(Container::arg_vec[j+1]))
-						oarg_ptr->str_vals = split(Container::arg_vec[j+1]);
-				
-					for(int l=0; l<((j+1<Container::arg_vec.size())?2:1); l++)
+						splitted = split(word);
+
+						for(int l=0; l<splitted.size(); l++)
+							oarg_ptr->str_vals.push_back(splitted[l]);		
+
+						splitted.clear();
+
 						Container::arg_vec.erase(Container::arg_vec.begin()+j);
-				
+					}
+
 					oarg_ptr->setVec();
-					
 					break;
 				}
 		}
 	}
+
+	for(int i=0; i<Container::arg_vec.size(); i++)
+		if(OargBase::isClName(Container::arg_vec[i]))
+		{
+			OargBase::unknown_options.push_back(Container::arg_vec[i]);
+			Container::arg_vec.erase(Container::arg_vec.begin()+i);
+			i--;
+		}
 	
 	for(int i=0; i<pos_vec.size(); i++)
 	{
 		oarg_ptr = Container::oargs[pos_vec[i]]; 
+		past_had_comma = true;
 
-		if(Container::arg_vec.size() > 1 && !OargBase::isClName(Container::arg_vec[1]))
+		while(Container::arg_vec.size() > 0)
+		{			
+			std::string& word = Container::arg_vec[0];
+		
+			if(word[0] != ',' && word[word.size()-1] != ',')
+			{
+				if(!past_had_comma)
+					break;
+				past_had_comma = false;
+			}
+			else
+				past_had_comma = true;
+		
+			splitted = split(word);
+
+			for(int j=0; j<splitted.size(); j++)
+				oarg_ptr->str_vals.push_back(splitted[j]);		
+
+			splitted.clear();
+			Container::arg_vec.erase(Container::arg_vec.begin());				
+		}
+
+		if(oarg_ptr->str_vals.size() > 0)
 		{
-			oarg_ptr->str_vals = split(Container::arg_vec[1]);
 			oarg_ptr->found = true;
-			Container::arg_vec.erase(Container::arg_vec.begin());
 			oarg_ptr->setVec();
 		}
 	}	
@@ -190,12 +238,7 @@ int oarg::parse(int argc, char** argv, bool clear)
 			oarg_ptr = Container::oargs[i];
 			oarg_ptr->str_vals = Container::oargs[oarg_ptr->getId()]->str_vals;
 			oarg_ptr->setVec();
-			continue;
 		}
-
-	for(int i=0; i<Container::arg_vec.size(); i++)
-		if(OargBase::isClName(Container::arg_vec[i]))
-			OargBase::unknown_options.push_back(Container::arg_vec[i]);
 
 	return OargBase::unknown_options.size();
 }
@@ -324,7 +367,7 @@ void oarg::OargBase::describe(const std::string& helpmsg)
      return;
 }
 
-void oarg::describeOargs(const std::string& helpmsg)
+void oarg::describeArgs(const std::string& helpmsg)
 {
 	OargBase::describe(helpmsg);
 }

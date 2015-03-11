@@ -16,13 +16,14 @@
 std::cout << "[oarg@debug] " << msg << std::endl
 
 #define OARG_VERSION "1.1"
+#define MAGIC_NUMBER 1
 
 namespace oarg
 {
 	std::vector<std::string> split(const std::string& src_str, const std::string& delim = ",");
 	int parse(int argc, char** argv, bool clear = true);
 	int parse(const std::string& filename, bool clear = true);
-	void describeOargs(const std::string& helpmsg = "");
+	void describeArgs(const std::string& helpmsg = "");
 	
 	//class for describing a command line argument 
 	class OargBase
@@ -61,7 +62,7 @@ namespace oarg
 		//friends declaration
 		friend int parse(int argc, char** argv, bool clear);
 		friend int parse(const std::string& filename, bool clear);
-		friend void describeOargs(const std::string&);
+		friend void describeArgs(const std::string&);
 	};
 
 	//class which includes values	
@@ -112,7 +113,7 @@ namespace oarg
 	};
 
 	//including implementation of template methods
-	#include "arg.tpp"
+	#include "oarg.tpp"
 }
 
 #endif

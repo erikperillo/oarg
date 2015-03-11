@@ -1,4 +1,5 @@
 #include "oarg.hpp"
+#include <cstdlib>
 
 using namespace std;
 using namespace oarg;
@@ -17,6 +18,27 @@ void printvec(vector<Tp> vec)
 	{
 		cout << vec[i];}
 	cout  << "]" << endl;
+}
+
+std::vector<int> sort(const std::vector<int>& src_vec)
+{
+	std::vector<int> ret_vec;
+	int aux;
+
+
+	for(int i=0; i<src_vec.size(); i++)
+	{
+		ret_vec.push_back(src_vec[i]);
+		for(int j=ret_vec.size()-1; j>0; j--)
+			if(ret_vec[j] < ret_vec[j-1])
+			{
+				aux = ret_vec[j-1];
+				ret_vec[j-1] = ret_vec[j];
+				ret_vec[j] = aux;
+			}
+	}
+	
+	return ret_vec;
 }
 
 int main(int argc, char** argv)
@@ -72,7 +94,7 @@ int main(int argc, char** argv)
 
 	if(help.getVal())
 	{
-		describeOargs("Parameters:");
+		describeArgs("Parameters:");
 		return 0;
 	}
 
