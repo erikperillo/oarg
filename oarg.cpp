@@ -154,7 +154,7 @@ int oarg::parse(int argc, char** argv, bool clear)
 				if(Container::arg_vec[j] == OargBase::clName(oarg_ptr->names[k]))
 				{ 
 					oarg_ptr->found = true;
-
+					std::cout << "found " << Container::arg_vec[j] << "!\n";
 					if(oarg_ptr->pos_n_found > 0)
 						pos_vec.erase(pos_vec.begin() + index);
 		
@@ -163,25 +163,21 @@ int oarg::parse(int argc, char** argv, bool clear)
 					Container::arg_vec.erase(Container::arg_vec.begin()+j);
 					while(j<Container::arg_vec.size() && !OargBase::isClName(Container::arg_vec[j]))
 					{	
-						std::string& word = Container::arg_vec[j];
-		
-						if(word[0] != ',' && word[word.size()-1] != ',')
-						{
-							if(!past_had_comma)
-								break;
+						std::string& word = Container::arg_vec[j];			
+			
+						if(word[0] != ',' && !past_had_comma)
+							break;
+						if(word[word.size()-1] != ',')
 							past_had_comma = false;
-						}
 						else
 							past_had_comma = true;
 					
 						splitted = split(word);
-
 						for(int l=0; l<splitted.size(); l++)
 							oarg_ptr->str_vals.push_back(splitted[l]);		
-
 						splitted.clear();
-
-						Container::arg_vec.erase(Container::arg_vec.begin()+j);
+						
+						Container::arg_vec.erase(Container::arg_vec.begin()+j);				
 					}
 
 					oarg_ptr->setVec();
@@ -205,23 +201,20 @@ int oarg::parse(int argc, char** argv, bool clear)
 
 		while(Container::arg_vec.size() > 0)
 		{			
-			std::string& word = Container::arg_vec[0];
-		
-			if(word[0] != ',' && word[word.size()-1] != ',')
-			{
-				if(!past_had_comma)
-					break;
+			std::string& word = Container::arg_vec[0];			
+			
+			if(word[0] != ',' && !past_had_comma)
+				break;
+			if(word[word.size()-1] != ',')
 				past_had_comma = false;
-			}
 			else
 				past_had_comma = true;
 		
 			splitted = split(word);
-
 			for(int j=0; j<splitted.size(); j++)
 				oarg_ptr->str_vals.push_back(splitted[j]);		
-
 			splitted.clear();
+			
 			Container::arg_vec.erase(Container::arg_vec.begin());				
 		}
 
