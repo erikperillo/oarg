@@ -122,21 +122,21 @@ int oarg::parse(int argc, char** argv, bool clear)
 	//copying argv to arg_vec
 	Container::arg_vec = std::vector<std::string>(argv + MAGIC_NUMBER, argv + argc);
 	
-	for(std::vector<oarg::OargBase*>::iterator oarg_ptr = Container::oargs.begin(); oarg_ptr != Container::oargs.end(); oarg_ptr++)
+	for(std::vector<oarg::OargBase*>::iterator oarg_it = Container::oargs.begin(); oarg_it != Container::oargs.end(); oarg_it++)
 	{	
 		if(Container::repeated[i])
 			continue;	
 
 		if(clear)
-			(*oarg_ptr)->clear();
+			(*oarg_it)->clear();
 		
 		//for(int j=0; j<Container::arg_vec.size(); j++)
 		for(std::vector<std::string>::iterator arg = Container::arg_vec.begin(); arg != Container::arg_vec.end(); arg++)
 		{
-			for(std::vector<std::string>::iterator name = (*oarg_ptr)->names.begin(); name != (*oarg_ptr)->names.end(); name++)
+			for(std::vector<std::string>::iterator name = (*oarg_it)->names.begin(); name != (*oarg_it)->names.end(); name++)
 				if(*arg == OargBase::clName(*name))
 				{
-					(*oarg_ptr)->found = true;
+					(*oarg_it)->found = true;
 					
 					past_had_comma = true;
 
@@ -152,18 +152,20 @@ int oarg::parse(int argc, char** argv, bool clear)
 							past_had_comma = true;
 					
 						splitted = split(*arg);
-						(*oarg_ptr)->str_vals.insert((*oarg_ptr)->str_vals.end(), splitted.begin(), splitted.end());
+						(*oarg_it)->str_vals.insert((*oarg_it)->str_vals.end(), splitted.begin(), splitted.end());
 						splitted.clear();
+						
+						arg = Container::arg_vec.erase(arg);
 					}
 					
-					(*oarg_ptr)->setVec(); 
+					(*oarg_it)->setVec(); 
 					arg--;
 					break;
 				}
 		}
 	
-		if(!(*oarg_ptr)->found && (*oarg_ptr)->pos_n_found > 0)
-			pos_vec.push_back(*oarg_ptr);
+		if(!(*oarg_it)->found && (*oarg_it)->pos_n_found > 0)
+			pos_vec.push_back(*oarg_it);
 	}
 	//collecting possible wrong args
 	for(std::vector<std::string>::iterator it = Container::arg_vec.begin(); it != Container::arg_vec.end();)
@@ -178,7 +180,7 @@ int oarg::parse(int argc, char** argv, bool clear)
 	sort(pos_vec.begin(), pos_vec.end(), comparer);
 	
 	//collecting args not specified by keyword
-	for(std::vector<oarg::OargBase*>::iterator oarg_ptr = pos_vec.begin(); oarg_ptr != pos_vec.end(); oarg_ptr++)
+	for(std::vector<oarg::OargBase*>::iterator oarg_it = pos_vec.begin(); oarg_it != pos_vec.end(); oarg_it++)
 	{
 		past_had_comma = true;
 
@@ -192,16 +194,16 @@ int oarg::parse(int argc, char** argv, bool clear)
 				past_had_comma = true;
 		
 			splitted = split(*arg);
-			(*oarg_ptr)->str_vals.insert((*oarg_ptr)->str_vals.end(), splitted.begin(), splitted.end());		
+			(*oarg_it)->str_vals.insert((*oarg_it)->str_vals.end(), splitted.begin(), splitted.end());		
 			splitted.clear();
 			
 			arg = Container::arg_vec.erase(arg);				
 		}
 
-		if((*oarg_ptr)->str_vals.size() > 0)
+		if((*oarg_it)->str_vals.size() > 0)
 		{
-			(*oarg_ptr)->found = true;
-			(*oarg_ptr)->setVec();
+			(*oarg_it)->found = true;
+			(*oarg_it)->setVec();
 		}
 	}	
 
