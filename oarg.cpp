@@ -1,12 +1,21 @@
-/* oarg - a simple command line/file parser 
-** by Erik Perillo 
-**
-** Implementation of routines of classes OargBase and Container */ 
+/* 
+Copyright (c) 2015, Erik Perillo
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #include "oarg.hpp"
 
 //class OargBase implementations
-//ctors
 oarg::OargBase::OargBase(const std::string& names, const std::string& description, int pos_n_found):
 description(description), found(false), pos_n_found(pos_n_found)
 {
@@ -42,7 +51,6 @@ id(-1), found(false), pos_n_found(0)
 	#endif
 }
 
-//operator= overload
 oarg::OargBase& oarg::OargBase::operator=(const oarg::OargBase& oarg)
 {
 	#if DEBUG
@@ -57,7 +65,6 @@ oarg::OargBase& oarg::OargBase::operator=(const oarg::OargBase& oarg)
      return *this;
 }
 
-//dtor
 oarg::OargBase::~OargBase()
 {
 	#if DEBUG
@@ -109,6 +116,7 @@ std::vector<std::string> oarg::split(const std::string& src_str, const std::stri
      return str_vec;
 }
 
+//sets values separated by commas
 inline void oarg::setVals(oarg::OargBase* oarg_ptr, std::vector<std::string>::iterator& arg)
 {
 	bool past_had_comma = true;
@@ -142,7 +150,6 @@ int oarg::parse(int argc, char** argv, bool clear)
 	std::vector<std::string>::iterator it;
 	int i=0;
 
-	//copying argv to arg_vec
 	Container::arg_vec = std::vector<std::string>(argv + MAGIC_NUMBER, argv + argc);
 	
 	for(std::vector<oarg::OargBase*>::iterator oarg_it = Container::oargs.begin(); oarg_it != Container::oargs.end(); oarg_it++)
@@ -169,7 +176,7 @@ int oarg::parse(int argc, char** argv, bool clear)
 		if(!(*oarg_it)->found && (*oarg_it)->pos_n_found > 0)
 			pos_vec.push_back(*oarg_it);
 	}
-	//collecting possible wrong args
+	
 	for(std::vector<std::string>::iterator it = Container::arg_vec.begin(); it != Container::arg_vec.end();)
 		if(OargBase::isClName(*it))
 		{
@@ -181,7 +188,6 @@ int oarg::parse(int argc, char** argv, bool clear)
 
 	sort(pos_vec.begin(), pos_vec.end(), comparer);
 	
-	//collecting args not specified by keyword
 	for(std::vector<oarg::OargBase*>::iterator oarg_it = pos_vec.begin(); oarg_it != pos_vec.end(); oarg_it++)
 	{
 		it = Container::arg_vec.begin();
@@ -208,27 +214,25 @@ int oarg::parse(const std::string& filename, bool clear)
 	std::ifstream in_file(filename.c_str());
 	std::stringstream ss;
 	std::string line,word,val;
-	oarg::OargBase* oarg_ptr;
 
 	if(!in_file.is_open())
 		return -1;
 
-	for(int i=0; i<Container::oargs.size(); i++)
+	for(std::vector<oarg::OargBase*>::iterator oarg_it = Container::oargs.begin(); oarg_it != Container::oargs.end(); oarg_it++)
 	{
-		oarg_ptr = Container::oargs[i];
-		
 		if(clear)
-			oarg_ptr->clear();
+			(*oarg_it)->clear();
 		
 		while(std::getline(in_file,line))
 		{
 			ss.str(line);
 			while(ss >> word)
 			{
-				for(int j=0; j<oarg_ptr->names.size(); j++)
-					if(word == OargBase::cfName(oarg_ptr->names[j]))
+				for(std::vector<std::string>::iterator name = (*oarg_it)->names.begin(); name != (*oarg_it)->names.end(); name++)
+					if(word == OargBase::cfName(*name))
 					{
-						oarg_ptr->found = true;
+						(*oarg_it)->found = true;
+					
 						while(ss >> word)
 						{
 							if(word[0] == '#')
@@ -248,9 +252,9 @@ int oarg::parse(const std::string& filename, bool clear)
 									}
 								val = val.substr(0,val.size()-1);
 							}
-							oarg_ptr->str_vals.push_back(val);
+							(*oarg_it)->str_vals.push_back(val);
 						}
-						oarg_ptr->setVec();
+						(*oarg_it)->setVec();
 					}
 			}
 			ss.str(std::string());
@@ -356,6 +360,7 @@ int oarg::Container::add(OargBase* oarg_ptr, bool is_repeated)
 	return oargs.size() - 1;
 }
 
+//comparer class method to be used in sort
 bool oarg::Comparer::operator()(oarg::OargBase* a, oarg::OargBase* b)
 {
 	return (a->getPosNFound() < b->getPosNFound());
@@ -367,8 +372,7 @@ namespace oarg
 	//gets value stored in str_vals
 	template<> void oarg::Oarg<std::string>::setVec()
 	{
-		for(int i=0; i<str_vals.size(); i++)
-			val_vec.push_back(str_vals[i]);
+		val_vec = str_vals;
 	}
 
 	//gets value stored in str_vals
