@@ -112,6 +112,18 @@ namespace oarg
 		friend int parse(const std::string& filename, bool clear);
 	};
 
+	class Comparer
+	{
+		public:
+		Comparer();
+		bool operator()(int a, int b);
+		int getIndex();
+		void setIndex(int x);
+	
+		private:
+		int index;
+	};
+
 	//including implementation of template methods
 	#include "oarg.tpp"
 }

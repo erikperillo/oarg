@@ -154,7 +154,7 @@ int oarg::parse(int argc, char** argv, bool clear)
 				if(Container::arg_vec[j] == OargBase::clName(oarg_ptr->names[k]))
 				{ 
 					oarg_ptr->found = true;
-					std::cout << "found " << Container::arg_vec[j] << "!\n";
+					
 					if(oarg_ptr->pos_n_found > 0)
 						pos_vec.erase(pos_vec.begin() + index);
 		
@@ -383,6 +383,27 @@ int oarg::Container::add(OargBase* oarg_ptr, bool is_repeated)
 	oargs.push_back(oarg_ptr);
 	repeated.push_back(is_repeated);
 	return oargs.size() - 1;
+}
+
+oarg::Comparer::Comparer(): index(0)
+{;}
+
+int oarg::Comparer::getIndex()
+{
+	return index;
+}
+
+void oarg::Comparer::setIndex(int x)
+{
+	index = x;
+}
+
+bool oarg::Comparer::operator()(int a, int b)
+{
+	bool less_than = (a < b);
+	if(!less_than)
+		index++;
+	return less_than;
 }
 
 //specializations of some template class Oarg routines
