@@ -112,116 +112,96 @@ std::vector<std::string> oarg::split(const std::string& src_str, const std::stri
 //parsing from command line routine
 int oarg::parse(int argc, char** argv, bool clear)
 {
-     oarg::OargBase* oarg_ptr;
+	oarg::OargBase* oarg_ptr;
+	oarg::Comparer comparer;
 	std::vector<std::string> splitted;
-	int 	index, aux;
+	std::vector<oarg::OargBase*> pos_vec;
+	int 	index, aux, i;
 	bool past_had_comma;
-	std::vector<int> pos_vec;
 
-	for(int i=MAGIC_NUMBER; i<argc; i++)
-		Container::arg_vec.push_back(argv[i]);
+	//copying argv to arg_vec
+	Container::arg_vec = std::vector<std::string>(argv + MAGIC_NUMBER, argv + argc);
 	
-	for(int i=0; i<Container::oargs.size(); i++)
+	for(std::vector<oarg::OargBase*>::iterator oarg_ptr = Container::oargs.begin(); oarg_ptr != Container::oargs.end(); oarg_ptr++)
 	{	
 		if(Container::repeated[i])
 			continue;	
 
-		oarg_ptr = Container::oargs[i];
-		
-		if(oarg_ptr->pos_n_found > 0)
-		{
-			index = 0;
-			pos_vec.insert(pos_vec.begin(),i);	
-			
-			for(int j=1; j<pos_vec.size(); j++)
-			{
-				if(Container::oargs[pos_vec[j-1]]->pos_n_found >= Container::oargs[pos_vec[j]]->pos_n_found)
-				{
-					aux = pos_vec[j];
-					pos_vec[j] = pos_vec[j-1];
-					pos_vec[j-1] = aux;
-					index = j;
-				}		
-			}
-		}
-
 		if(clear)
-			oarg_ptr->clear();
+			(*oarg_ptr)->clear();
 		
-		for(int j=0; j<Container::arg_vec.size(); j++)
+		//for(int j=0; j<Container::arg_vec.size(); j++)
+		for(std::vector<std::string>::iterator arg = Container::arg_vec.begin(); arg != Container::arg_vec.end(); arg++)
 		{
-			for(int k=0; k<oarg_ptr->names.size(); k++)
-				if(Container::arg_vec[j] == OargBase::clName(oarg_ptr->names[k]))
-				{ 
-					oarg_ptr->found = true;
+			for(std::vector<std::string>::iterator name = (*oarg_ptr)->names.begin(); name != (*oarg_ptr)->names.end(); name++)
+				if(*arg == OargBase::clName(*name))
+				{
+					(*oarg_ptr)->found = true;
 					
-					if(oarg_ptr->pos_n_found > 0)
-						pos_vec.erase(pos_vec.begin() + index);
-		
 					past_had_comma = true;
 
-					Container::arg_vec.erase(Container::arg_vec.begin()+j);
-					while(j<Container::arg_vec.size() && !OargBase::isClName(Container::arg_vec[j]))
+					arg = Container::arg_vec.erase(arg);
+
+					while(arg != Container::arg_vec.end() && !OargBase::isClName(*arg))
 					{	
-						std::string& word = Container::arg_vec[j];			
-			
-						if(word[0] != ',' && !past_had_comma)
+						if((*arg)[0] != ',' && !past_had_comma)
 							break;
-						if(word[word.size()-1] != ',')
+						if((*arg)[(*arg).size()-1] != ',')
 							past_had_comma = false;
 						else
 							past_had_comma = true;
 					
-						splitted = split(word);
-						for(int l=0; l<splitted.size(); l++)
-							oarg_ptr->str_vals.push_back(splitted[l]);		
+						splitted = split(*arg);
+						(*oarg_ptr)->str_vals.insert((*oarg_ptr)->str_vals.end(), splitted.begin(), splitted.end());
 						splitted.clear();
-						
-						Container::arg_vec.erase(Container::arg_vec.begin()+j);				
 					}
-
-					oarg_ptr->setVec();
+					
+					(*oarg_ptr)->setVec(); 
+					arg--;
 					break;
 				}
 		}
-	}
-
-	for(int i=0; i<Container::arg_vec.size(); i++)
-		if(OargBase::isClName(Container::arg_vec[i]))
-		{
-			OargBase::unknown_options.push_back(Container::arg_vec[i]);
-			Container::arg_vec.erase(Container::arg_vec.begin()+i);
-			i--;
-		}
 	
-	for(int i=0; i<pos_vec.size(); i++)
+		if(!(*oarg_ptr)->found && (*oarg_ptr)->pos_n_found > 0)
+			pos_vec.push_back(*oarg_ptr);
+	}
+	//collecting possible wrong args
+	for(std::vector<std::string>::iterator it = Container::arg_vec.begin(); it != Container::arg_vec.end();)
+		if(OargBase::isClName(*it))
+		{
+			OargBase::unknown_options.push_back(*it);
+			it = Container::arg_vec.erase(it);
+		}
+		else
+			it++;
+
+	sort(pos_vec.begin(), pos_vec.end(), comparer);
+	
+	//collecting args not specified by keyword
+	for(std::vector<oarg::OargBase*>::iterator oarg_ptr = pos_vec.begin(); oarg_ptr != pos_vec.end(); oarg_ptr++)
 	{
-		oarg_ptr = Container::oargs[pos_vec[i]]; 
 		past_had_comma = true;
 
-		while(Container::arg_vec.size() > 0)
+		for(std::vector<std::string>::iterator arg = Container::arg_vec.begin(); arg != Container::arg_vec.end();)
 		{			
-			std::string& word = Container::arg_vec[0];			
-			
-			if(word[0] != ',' && !past_had_comma)
+			if((*arg)[0] != ',' && !past_had_comma)
 				break;
-			if(word[word.size()-1] != ',')
+			if((*arg)[(*arg).size()-1] != ',')
 				past_had_comma = false;
 			else
 				past_had_comma = true;
 		
-			splitted = split(word);
-			for(int j=0; j<splitted.size(); j++)
-				oarg_ptr->str_vals.push_back(splitted[j]);		
+			splitted = split(*arg);
+			(*oarg_ptr)->str_vals.insert((*oarg_ptr)->str_vals.end(), splitted.begin(), splitted.end());		
 			splitted.clear();
 			
-			Container::arg_vec.erase(Container::arg_vec.begin());				
+			arg = Container::arg_vec.erase(arg);				
 		}
 
-		if(oarg_ptr->str_vals.size() > 0)
+		if((*oarg_ptr)->str_vals.size() > 0)
 		{
-			oarg_ptr->found = true;
-			oarg_ptr->setVec();
+			(*oarg_ptr)->found = true;
+			(*oarg_ptr)->setVec();
 		}
 	}	
 
@@ -334,6 +314,16 @@ bool oarg::OargBase::isClName(const std::string& word)
 	return (word[0]=='-' && (word[1] < '0' || word[1] > '9'));
 }
 
+int oarg::OargBase::getId()
+{
+	return id;
+}
+
+int oarg::OargBase::getPosNFound()
+{
+	return pos_n_found;
+}
+
 //lists arguments in command line names format and it's descriptions
 void oarg::OargBase::describe(const std::string& helpmsg)
 {
@@ -365,11 +355,6 @@ void oarg::describeArgs(const std::string& helpmsg)
 	OargBase::describe(helpmsg);
 }
 
-int oarg::OargBase::getId()
-{
-	return id;
-}
-
 //class Container definitions
 
 //definition of static class OargBase data members
@@ -398,12 +383,9 @@ void oarg::Comparer::setIndex(int x)
 	index = x;
 }
 
-bool oarg::Comparer::operator()(int a, int b)
+bool oarg::Comparer::operator()(oarg::OargBase* a, oarg::OargBase* b)
 {
-	bool less_than = (a < b);
-	if(!less_than)
-		index++;
-	return less_than;
+	return (a->getPosNFound() < b->getPosNFound());
 }
 
 //specializations of some template class Oarg routines

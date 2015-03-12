@@ -10,6 +10,7 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 
 #define DEBUG 0 
 #define debugmsg(msg)\
@@ -39,6 +40,7 @@ namespace oarg
 		virtual OargBase& operator=(const OargBase& oarg);
 		static std::string getUnknownOption(int index = 0);
 		int getId();
+		int getPosNFound();
 
 		private:
 		static std::string pureName(const std::string& name);
@@ -116,7 +118,7 @@ namespace oarg
 	{
 		public:
 		Comparer();
-		bool operator()(int a, int b);
+		bool operator()(OargBase* a, OargBase* b);
 		int getIndex();
 		void setIndex(int x);
 	
