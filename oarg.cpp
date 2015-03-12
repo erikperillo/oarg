@@ -109,15 +109,38 @@ std::vector<std::string> oarg::split(const std::string& src_str, const std::stri
      return str_vec;
 }
 
+inline void oarg::setVals(oarg::OargBase* oarg_ptr, std::vector<std::string>::iterator& arg)
+{
+	bool past_had_comma = true;
+	std::vector<std::string> splitted;
+
+	while(arg != Container::arg_vec.end() && !OargBase::isClName(*arg))
+	{
+		if((*arg)[0] != ',' && !past_had_comma)
+			break;
+		if((*arg)[(*arg).size()-1] != ',')
+			past_had_comma = false;
+		else
+			past_had_comma = true;
+
+		splitted = split(*arg);
+		oarg_ptr->str_vals.insert(oarg_ptr->str_vals.end(), splitted.begin(), splitted.end());
+		splitted.clear();
+
+		arg = Container::arg_vec.erase(arg);
+	}
+
+	oarg_ptr->setVec();
+}
+
 //parsing from command line routine
 int oarg::parse(int argc, char** argv, bool clear)
 {
 	oarg::OargBase* oarg_ptr;
 	oarg::Comparer comparer;
-	std::vector<std::string> splitted;
 	std::vector<oarg::OargBase*> pos_vec;
-	int 	index, aux, i;
-	bool past_had_comma;
+	std::vector<std::string>::iterator it;
+	int i=0;
 
 	//copying argv to arg_vec
 	Container::arg_vec = std::vector<std::string>(argv + MAGIC_NUMBER, argv + argc);
@@ -126,39 +149,18 @@ int oarg::parse(int argc, char** argv, bool clear)
 	{	
 		if(Container::repeated[i])
 			continue;	
+		i++;
 
 		if(clear)
 			(*oarg_it)->clear();
 		
-		//for(int j=0; j<Container::arg_vec.size(); j++)
 		for(std::vector<std::string>::iterator arg = Container::arg_vec.begin(); arg != Container::arg_vec.end(); arg++)
 		{
 			for(std::vector<std::string>::iterator name = (*oarg_it)->names.begin(); name != (*oarg_it)->names.end(); name++)
 				if(*arg == OargBase::clName(*name))
 				{
 					(*oarg_it)->found = true;
-					
-					past_had_comma = true;
-
-					arg = Container::arg_vec.erase(arg);
-
-					while(arg != Container::arg_vec.end() && !OargBase::isClName(*arg))
-					{	
-						if((*arg)[0] != ',' && !past_had_comma)
-							break;
-						if((*arg)[(*arg).size()-1] != ',')
-							past_had_comma = false;
-						else
-							past_had_comma = true;
-					
-						splitted = split(*arg);
-						(*oarg_it)->str_vals.insert((*oarg_it)->str_vals.end(), splitted.begin(), splitted.end());
-						splitted.clear();
-						
-						arg = Container::arg_vec.erase(arg);
-					}
-					
-					(*oarg_it)->setVec(); 
+					setVals(*oarg_it,(arg=Container::arg_vec.erase(arg)));
 					arg--;
 					break;
 				}
@@ -182,29 +184,11 @@ int oarg::parse(int argc, char** argv, bool clear)
 	//collecting args not specified by keyword
 	for(std::vector<oarg::OargBase*>::iterator oarg_it = pos_vec.begin(); oarg_it != pos_vec.end(); oarg_it++)
 	{
-		past_had_comma = true;
-
-		for(std::vector<std::string>::iterator arg = Container::arg_vec.begin(); arg != Container::arg_vec.end();)
-		{			
-			if((*arg)[0] != ',' && !past_had_comma)
-				break;
-			if((*arg)[(*arg).size()-1] != ',')
-				past_had_comma = false;
-			else
-				past_had_comma = true;
+		it = Container::arg_vec.begin();
+		setVals(*oarg_it,it);
 		
-			splitted = split(*arg);
-			(*oarg_it)->str_vals.insert((*oarg_it)->str_vals.end(), splitted.begin(), splitted.end());		
-			splitted.clear();
-			
-			arg = Container::arg_vec.erase(arg);				
-		}
-
 		if((*oarg_it)->str_vals.size() > 0)
-		{
 			(*oarg_it)->found = true;
-			(*oarg_it)->setVec();
-		}
 	}	
 
 	for(int i=0; i<Container::oargs.size(); i++)
@@ -344,7 +328,7 @@ void oarg::OargBase::describe(const std::string& helpmsg)
 			for(j=0; j<oarg_ptr->names.size()-1; j++)
 				line +=  OargBase::clName(oarg_ptr->names[j]) + ", ";
 			line += OargBase::clName(oarg_ptr->names[j]);
-			std::cout << std::left << std::setw(48) << line;
+			std::cout << std::left << std::setw(40) << line;
 			line = " " + oarg_ptr->description;
 			std::cout << std::left << std::setw(32) << line << std::endl;
 		}
@@ -370,19 +354,6 @@ int oarg::Container::add(OargBase* oarg_ptr, bool is_repeated)
 	oargs.push_back(oarg_ptr);
 	repeated.push_back(is_repeated);
 	return oargs.size() - 1;
-}
-
-oarg::Comparer::Comparer(): index(0)
-{;}
-
-int oarg::Comparer::getIndex()
-{
-	return index;
-}
-
-void oarg::Comparer::setIndex(int x)
-{
-	index = x;
 }
 
 bool oarg::Comparer::operator()(oarg::OargBase* a, oarg::OargBase* b)

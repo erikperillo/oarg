@@ -65,7 +65,10 @@ namespace oarg
 		friend int parse(int argc, char** argv, bool clear);
 		friend int parse(const std::string& filename, bool clear);
 		friend void describeArgs(const std::string&);
+		friend void setVals(OargBase* oarg_ptr, std::vector<std::string>::iterator& it);
 	};
+	
+	void setVals(OargBase* oarg_ptr, std::vector<std::string>::iterator& it);
 
 	//class which includes values	
 	template <class Tp = int>
@@ -112,18 +115,13 @@ namespace oarg
 		template <class Tp> friend class Oarg;
 		friend int parse(int argc, char** argv, bool clear);
 		friend int parse(const std::string& filename, bool clear);
+		friend void setVals(OargBase* oarg_ptr, std::vector<std::string>::iterator& it);
 	};
 
 	class Comparer
 	{
 		public:
-		Comparer();
 		bool operator()(OargBase* a, OargBase* b);
-		int getIndex();
-		void setIndex(int x);
-	
-		private:
-		int index;
 	};
 
 	//including implementation of template methods
