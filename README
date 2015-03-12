@@ -13,16 +13,16 @@ Even if you don't follow these rules when declaring an instance of class Oarg<ty
 
 DEF_VAL is the default value of type "type" the program will return if nothing is found in parsing anyway. 
 
-DESCRIPTION is a description of the argument. The descriptions of all arguments can be read by invoking the method OargBase::describe(string helpmsg = "").
+DESCRIPTION is a description of the argument. The descriptions of all arguments can be read by invoking the method describeArgs(string helpmsg = "").
 
 POS_N_FOUND is the position of remaining arguments (the ones that don't follow a keyword) that the program will take as the argument for Oarg if it's keyword was not found.
 
-In order to get the value after parsing, you must invoke the method Oarg<type>::getVal(int index = 0). The values found in command line are stored in a vector of strings and the program assumes every argument separated with SINGLE comma until a new name comes is an argument of the instance of the object. If you have an instance Oarg<float> arg("-f",0.1,"") and the argv has the form "--val 3 -f 0.4,21,0.89 --val2 'string'", every number from 0.4 to 0.89 will be stored as an argument of instance arg. in method 'getVal', argument index defines the index of the argument in the argument vector stored.
+In order to get the value after parsing, you must invoke the method Oarg<type>::getVal(int index = 0). The values found in command line are stored in a vector and the program assumes every argument separated with commas and/or spaces until a new name comes is an argument of the instance of the object. If you have an instance Oarg<float> arg("-f",0.1,"") and the argv has the form "--val 3 -f 0.4, 21 , 0.89 --val2 'string'", every number from 0.4 to 0.89 will be stored as an argument of instance arg. in method 'getVal', argument index defines the index of the argument in the argument vector stored.
 
 If you pass a string started with "-", the program will interpret the string as a name. To solve this, put a character "\" before the string (eg. "\-ey b0ss"). The program will then interpret correctly your string as an argument "-ey b0ss".
 To pass a string with comma without being misinpertreted, use '\,' instead.
 
-To finally parse, one must invoke OargBase::parse(int argc, char** argv).
+To finally parse, one must invoke parse(int argc, char** argv).
 
 FILE PARSING
 
@@ -34,4 +34,4 @@ Even if you don't follow the rules, the program will force it to be conformant t
 
 In this case, multiple arguments must be separated by (any number of) whitespaces.
 
-To parse in a file, one must invoke OargBase::parse(const string& filename).
+To parse in a file, one must invoke parse(const string& filename).
