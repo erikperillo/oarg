@@ -92,9 +92,9 @@ void Oarg<Tp>::setVec()
 	std::stringstream ss;	
 	Tp dumb_val;
 
-	for(int i=0; i<str_vals.size(); i++)
+	for(std::vector<std::string>::iterator val = str_vals.begin(); val != str_vals.end(); val++)
 	{
-		ss.str(str_vals[i]);
+		ss.str(*val);
 
 		if(ss >> dumb_val)
 			val_vec.push_back(dumb_val);

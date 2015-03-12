@@ -152,7 +152,7 @@ int oarg::parse(int argc, char** argv, bool clear)
 
 	Container::arg_vec = std::vector<std::string>(argv + MAGIC_NUMBER, argv + argc);
 	
-	for(std::vector<oarg::OargBase*>::iterator oarg_it = Container::oargs.begin(); oarg_it != Container::oargs.end(); oarg_it++)
+	for(auto oarg_it = Container::oargs.begin(); oarg_it != Container::oargs.end(); oarg_it++)
 	{	
 		if(Container::repeated[i])
 			continue;	
@@ -161,9 +161,9 @@ int oarg::parse(int argc, char** argv, bool clear)
 		if(clear)
 			(*oarg_it)->clear();
 		
-		for(std::vector<std::string>::iterator arg = Container::arg_vec.begin(); arg != Container::arg_vec.end(); arg++)
+		for(auto arg = Container::arg_vec.begin(); arg != Container::arg_vec.end(); arg++)
 		{
-			for(std::vector<std::string>::iterator name = (*oarg_it)->names.begin(); name != (*oarg_it)->names.end(); name++)
+			for(auto name = (*oarg_it)->names.begin(); name != (*oarg_it)->names.end(); name++)
 				if(*arg == OargBase::clName(*name))
 				{
 					(*oarg_it)->found = true;
@@ -177,7 +177,7 @@ int oarg::parse(int argc, char** argv, bool clear)
 			pos_vec.push_back(*oarg_it);
 	}
 	
-	for(std::vector<std::string>::iterator it = Container::arg_vec.begin(); it != Container::arg_vec.end();)
+	for(auto it = Container::arg_vec.begin(); it != Container::arg_vec.end();)
 		if(OargBase::isClName(*it))
 		{
 			OargBase::unknown_options.push_back(*it);
@@ -188,7 +188,7 @@ int oarg::parse(int argc, char** argv, bool clear)
 
 	sort(pos_vec.begin(), pos_vec.end(), comparer);
 	
-	for(std::vector<oarg::OargBase*>::iterator oarg_it = pos_vec.begin(); oarg_it != pos_vec.end(); oarg_it++)
+	for(auto oarg_it = pos_vec.begin(); oarg_it != pos_vec.end(); oarg_it++)
 	{
 		it = Container::arg_vec.begin();
 		setVals(*oarg_it,it);
@@ -218,7 +218,7 @@ int oarg::parse(const std::string& filename, bool clear)
 	if(!in_file.is_open())
 		return -1;
 
-	for(std::vector<oarg::OargBase*>::iterator oarg_it = Container::oargs.begin(); oarg_it != Container::oargs.end(); oarg_it++)
+	for(auto oarg_it = Container::oargs.begin(); oarg_it != Container::oargs.end(); oarg_it++)
 	{
 		if(clear)
 			(*oarg_it)->clear();
@@ -228,7 +228,7 @@ int oarg::parse(const std::string& filename, bool clear)
 			ss.str(line);
 			while(ss >> word)
 			{
-				for(std::vector<std::string>::iterator name = (*oarg_it)->names.begin(); name != (*oarg_it)->names.end(); name++)
+				for(auto name = (*oarg_it)->names.begin(); name != (*oarg_it)->names.end(); name++)
 					if(word == OargBase::cfName(*name))
 					{
 						(*oarg_it)->found = true;
@@ -317,23 +317,21 @@ int oarg::OargBase::getPosNFound()
 //lists arguments in command line names format and it's descriptions
 void oarg::OargBase::describe(const std::string& helpmsg)
 {
-     int j;
      std::string line;
-	oarg::OargBase* oarg_ptr;
 
      if(helpmsg!="")
           std::cout << helpmsg << std::endl;
 
-     for(int i=0; i<Container::oargs.size(); i++)
-		if(!Container::repeated[i])
+     for(auto oarg_it = Container::oargs.begin(); oarg_it != Container::oargs.end(); oarg_it++)
+		if(!Container::repeated[oarg_it - Container::oargs.begin()])
 		{
-			oarg_ptr = Container::oargs[i]; 
 			line = "\t";
-			for(j=0; j<oarg_ptr->names.size()-1; j++)
-				line +=  OargBase::clName(oarg_ptr->names[j]) + ", ";
-			line += OargBase::clName(oarg_ptr->names[j]);
+			auto it = (*oarg_it)->names.begin();
+			for(it = (*oarg_it)->names.begin(); it != (*oarg_it)->names.end()-1; it++)
+				line +=  OargBase::clName(*it) + ", ";
+			line += OargBase::clName(*it);
 			std::cout << std::left << std::setw(40) << line;
-			line = " " + oarg_ptr->description;
+			line = " " + (*oarg_it)->description;
 			std::cout << std::left << std::setw(32) << line << std::endl;
 		}
 
@@ -346,7 +344,6 @@ void oarg::describeArgs(const std::string& helpmsg)
 }
 
 //class Container definitions
-
 //definition of static class OargBase data members
 std::vector<oarg::OargBase*> oarg::Container::oargs;
 std::vector<bool> oarg::Container::repeated;

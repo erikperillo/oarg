@@ -16,7 +16,7 @@ NAME = oarg
 all: $(NAME).o
 
 $(NAME).o: $(NAME).cpp $(NAME).hpp oarg.tpp 
-	g++ -c -o $(NAME).o $(NAME).cpp
+	g++ -c -o $(NAME).o $(NAME).cpp -std=c++14
 
 test: test.cpp $(NAME).o
 	g++ -o test test.cpp $(NAME).o 
